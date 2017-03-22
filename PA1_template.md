@@ -21,7 +21,8 @@ The following R packages are used in this report for data processing and analysi
 - dplyr
 
 
-```{r Packages, echo = TRUE}
+
+```r
 #Checks if ggplot2 is installed and if not installs it
 list.of.packages <- c("ggplot2")
 
@@ -73,7 +74,8 @@ The variables included in this dataset are:
 ####R Code for Downloading and Processing the Data Set
 The following code will download, unzip, and load the data into a data frame titled DF:
 
-```{r loadData, echo = TRUE}
+
+```r
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip","DF.zip")
 
 unzip("DF.zip")
@@ -87,7 +89,8 @@ DF <- read.csv("activity.csv", header = TRUE, na.strings = "NA")
 To get familiar with the dataset we will first plot the distribution of the total steps taken per day.  The mean and median total steps taken per day will be indicated on the histogram.
 
 
-```{r HistStepsPerDay, echo = TRUE}
+
+```r
 # Sum the steps by day and store in data frame titled "aggStepsByDay"
 aggStepsByDay <- DF %>%
         group_by(date) %>%
@@ -112,13 +115,24 @@ a + geom_histogram() +
         theme(legend.position="top")
 ```
 
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+```
+## Warning: Removed 8 rows containing non-finite values (stat_bin).
+```
+
+![plot of chunk HistStepsPerDay](figure/HistStepsPerDay-1.png)
+
 
 
 ## What is the average daily activity pattern?
 
 Next we will get an idea of what a typical daily activity pattern looks like through plotting a time series of the average number of steps per 5 minute interval.
 
-```{r TimeSeries, echo = TRUE}
+
+```r
 # Average the steps per interval and store in data frame titled "avStepsByInterval"
 avStepsByInterval <- DF %>%
         group_by(interval) %>%
@@ -142,6 +156,8 @@ a + geom_line() +
         geom_text(aes(label=ifelse(avStepsPerInt == MxStp, paste('The ', MxInt, 'th interval has the max average of ', MxStpF, ' steps', sep = ''),'')),hjust=0,vjust=0, color = "Red")
 ```
 
+![plot of chunk TimeSeries](figure/TimeSeries-1.png)
+
 ## Imputing missing values
 
 This data set contains may missing values. The following analysis will determine how those missing values when imputed will change the distribution, mean, and median of total number of steps per day.
@@ -150,13 +166,17 @@ This data set contains may missing values. The following analysis will determine
 
 The following code will calculate the total number of observations with missing step count values:
 
-```{r NACount, echo = TRUE}
+
+```r
 # Calculate number of NAs
 
 NumberOfNAs <- sum(is.na(DF$steps))
 
 NumberOfNAs
+```
 
+```
+## [1] 2304
 ```
 
 #### Impute the Missing Values
@@ -165,7 +185,8 @@ The missing values will be imputed via the mean value of steps per interval.
 
 The code to complete this task is as follows:
 
-```{r ImputeData, echo = TRUE}
+
+```r
 # Create data frame with mean steps per interval
 
 MeStepsByInterval <- DF %>%
@@ -193,12 +214,12 @@ MDF <- sqldf("
                 on M.interval = D.interval
              
              ")
-
 ```
 
 #### Plot Distribution With Imputed Values
 
-```{r ImputeHistogram, echo = TRUE}
+
+```r
 # Sum the steps by day and store in data frame titled "aggImStepsByDay"
 aggImStepsByDay <- MDF %>%
         group_by(date) %>%
@@ -221,8 +242,13 @@ a + geom_histogram() +
         geom_vline(aes(xintercept = m, color = "Red"), size = 1 , show.legend =TRUE) +
         scale_colour_manual(name='', labels=c(paste('Mean = ', M), paste('Median = ', m)), values = c("Blue", "Red")) +
         theme(legend.position="top")
+```
 
 ```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![plot of chunk ImputeHistogram](figure/ImputeHistogram-1.png)
 
 #### How Has Imputing Values Affected The Distrubution, Mean, and Median?
 
@@ -234,7 +260,8 @@ The median however has moved closer to the mean since the additional days were a
 
 The following code uses the imputed value data set and adds a factor variable indicating whether the day of the observation is a weekend or weekday.  After the factor variable has been added the average steps per interval is calculated accross all day for each factor (weekend or weekday).  Once the average steps per interval is calculated the results are plotted comparing the average weekday to weekend day.
 
-```{r AddFactorVariable, echo = TRUE}
+
+```r
 # Update date variable to date data type 
 MDF$date <- as.Date(MDF$date)
 
@@ -276,8 +303,9 @@ a + geom_line() +
         ylab("Average Steps") +
         ggtitle("Average Steps Per Interval") +
         facet_grid(WDay ~ .)
-
 ```
+
+![plot of chunk AddFactorVariable](figure/AddFactorVariable-1.png)
 
 It looks like weekends have a shallower morning peak and then more activity throughout the day.  This would make sense since many people have morning commutes on weekdays and are probably less active while working (assuming they have an office job).
 
